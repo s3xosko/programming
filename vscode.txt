@@ -1,0 +1,3 @@
+CTRL + shift + p = open command palette
+Vseobecne nastavenia VSCode = settings.json:
+    - pacol som tam "files.eol": "\n" aby defaultne pouzival LF ako znak konca riadku

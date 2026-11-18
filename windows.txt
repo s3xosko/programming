@@ -1,0 +1,2 @@
+Spravit bootovacie USB z ISO suboru 
+    - apka rufus

@@ -1,0 +1,3 @@
+Generacia SSH paru klucov
+    ssh-keygen -t ed25519 -C 'Pop!_OS Legion'
+    - za -C je komentar ku klucu, nedolezity
