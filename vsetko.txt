@@ -1,0 +1,6 @@
+Windows
+Spravit bootovacie USB z ISO suboru -> rufus
+
+Linux
+Generacia SSH paru klucov:
+    ssh-keygen -t ed25519 -C 'Pop!_OS Legion'

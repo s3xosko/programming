@@ -1,0 +1,13 @@
+# Automatically detect text files and normalize them to LF in the repository
+* text=auto eol=lf
+
+# Ensure Shell scripts always use LF, otherwise they won't run under Linux
+*.sh text eol=lf
+
+# Windows batch files retain CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files should not have line separators converted
+*.png binary
+*.jpg binary

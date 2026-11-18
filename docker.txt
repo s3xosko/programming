@@ -1,0 +1,1 @@
+Docker Desktop runs a lightweight Linux virtual machine (VM) on your host computer, and your containers run inside that VM. This happens automatically in the background across Windows, macOS, and even Linux.
