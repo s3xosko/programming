@@ -1,1 +1,135 @@
-Docker Desktop runs a lightweight Linux virtual machine (VM) on your host computer, and your containers run inside that VM. This happens automatically in the background across Windows, macOS, and even Linux.
+Commands
+docker compose build 
+    - zbuildi image 
+docker compose up 
+    - spusta kontajnery 
+    -d or --detach says to run container in the background, otherwise the logs will be displayed in terminal. Also when the terminal is closed the container stops.
+docker compose down 
+    - vypina kontajnery
+docker compose ps
+    - check ci vsetky kontajnery bezia 
+docker compose logs <name>
+    - vypise logy daneho kontajnera
+docker compose exec <service> <command>
+    - runs a command inside an already running container 
+
+
+
+Files
+/etc/docker/daemon.json - configuration file for Docker daemon (dockerd). Instead of passing the options as command-line flags, they are put into this file.
+
+
+
+Theory
+Image = template to be run
+Container = a running instance of an image
+Docker Desktop
+    - a complete desktop application with a graphical interface (has built-in engine, CLI, compose etc.)
+    
+    - runs a lightweight Linux virtual machine (VM) on your host computer, and your containers run inside that VM. This happens automatically in the background across all Windows, macOS, and even Linux:
+        Windows -> by default, Docker Desktop runs its Linux environment inside a lightweight utility VM managed by WSL 2 (Windows Subsystem for Linux 2). Alternatively, it can use Hyper-V or Docker VMM to create a traditional VM boundary. (If you switch Windows Docker Desktop to "Windows containers" mode, it runs natively on the Windows kernel without a Linux VM).
+        
+        MacOS -> Docker Desktop uses Apple's native Virtualization framework or its own Docker VMM (Virtual Machine Manager) to run the Linux VM.
+        
+        Linux -> Docker Desktop spins up a QEMU-based VM with a shared file system (VirtioFS) to house the Docker Engine. Even though Linux has a native kernel, Docker Desktop for Linux still uses a VM. This keeps the user experience consistent across all operating systems, gives access to newer kernel features, and adds a layer of security isolation between containers and your host system.
+
+        -> why VM? Standard Docker containers rely on specific features of the Linux kernel. Because Windows and macOS do not have a native Linux kernel, Docker Desktop creates a hidden Linux VM to provide one.
+
+    - Docker officially states that Linux version of Docker Desktop cannot directly use host GPU acceleration
+
+
+
+Docker Engine 
+    - on linux you can avoid the overhead of a VM by using Docker Engine (core of the app) directly
+    - runs containers directly on a host machine 
+    - command-line-only background system service
+    - images and containers are stored directly in the host machines's /var/lib/docker directory
+    - supports passthrough of host GPU to containers through installation of NVIDIA Container Toolkit, which is the standard approach for running GPU-accelerated workloads (such as AI models) on Linux
+
+
+
+Pop!_OS (Ubuntu-based) installation 
+1. sudo apt install ca-certificates curl gnupg
+    - install three packages needed by Docker 
+    - ca-certificates:
+        -> a bundle of trusted Certificate Authority (CA) root certificates (such as those preinstalled in browsers)
+        -> when you later add Docker's repository over HTTPS (https://download.docker.com/...) and when Docker pulls container images from registries, those connections use TLS. Your system needs a set of trusted root certificates to verify that the server it's talking to is genuinely who it claims to be. Without this, HTTPS downloads would fail with certificate errors
+        -> probably saved into /usr/share/ca-certificates/ or etc/ssl/certs/ca-certificates.crt 
+
+    - curl:
+        -> a command-line tool for transferring data over networks using URLs (supports HTTP, HTTPS, FTP, etc.)
+        -> it's the standard way to fetch a file from a URL in a terminal
+        -> we'll use curl to download Docker's GPG key (Docker's signing key used to verify authenticity of a file) from Docker's website and pipe it into the right location
+
+    - gnupg (GNU Privacy Guard):
+        -> an implementation of the OpenPGP standard for cryptographic signing and encryption. It provides the gpg command used to verify file according to a GPG key
+        
+    - these three together from the trust chain for adding a third-party repository securely:
+        -> curl fetches Docker's GPG key from Docker's HTTPS site
+        -> ca-certificates ensures that HTTPS fetch is trustworthy and thus possible (the site's certificate validates)
+        -> gnupg lets apt store and use that key to verify every Docker package we later download
+
+2. Add Docker's official GPG key
+    2.1. sudo install -m 0755 -d /etc/apt/keyrings 
+        - install combines copy/creation of files/directories with explicit attribute settting in one step
+        - -d = creates a directory
+        - -m 0755 sets permissions to UGO-RWX/RX/RX
+        - /etc/apt/keyrings is the modern standard location on Debian/Ubuntu systems for storing third-party repository keys. Placing keys here is much safer than the old approach of dumping them directly into /etc/apt/trusted.gpg
+
+    2.2. sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        - downloads the Docker's GPG key
+        - -fsSL -f fails silently on server errors, -s silent mode, -S shows errors when silent, -L follows redirects
+        - -o where to save the file 
+    
+    2.3. sudo chmod a+r /etc/apt/keyrings/docker.asc
+        - ensure everyone can read this file
+
+3. Add Docker's repository to apt index 
+    - because the Docker is not in Ubuntu's own apt repositories, we need to add it 
+    - command:
+sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+        -> tee = read from stdin, write to stdout or file
+        -> the content between <<EOF and EOF is the deb822 format source definition
+        -> Types:deb says this is a binary package repository 
+        -> URIs: states repo address
+        -> Suites: automatically retrieves your system's codename (e.g., jammy or noble = Ubuntu's release codename)
+        -> Components:stable uses Docker's stable channel
+        -> Architectures: automatically retrieves your CPU architecture (should be amd64)
+        -> Signed-By: points to the GPG key file from the previous step, which is the correct way to associate the key with the repository in the new format
+
+4. Update the apt index 
+    sudo apt update
+
+5. Install the Docker packages 
+    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    - docker-ce = Docker Engine main program (daemon)
+    - docker-ce-cli = Command-line interface for managing engine
+    - containerd.io = Container runtime that Docker depends on
+    - docker-buildx-plugin = Modern plugin for building images (old docker build is an alias for buildx build)
+    - docker-compose-plugin = Plugin for orchestrating multi-container applications
+    - the first three will be also used to make a container out of an image (make a dish from a recipe)
+
+6. Verify if the Docker is running 
+    6.1 sudo systemctl status docker
+
+    6.2 if not running use
+        sudo systemctl start docker
+    
+7. Run a test container 
+    sudo docker run hello-world
+
+8. Set yourself as authorized to run Docker without sudo
+    sudo usermod -aG docker $USER
+
+
+
+NVIDIA Container Toolkit 
+Docker itself cannot directly use the graphics card, so you need to install the NVIDIA Container Toolkit to "pass through" the GPU to the container.

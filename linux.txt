@@ -1,3 +1,15 @@
-Generacia SSH paru klucov
-    ssh-keygen -t ed25519 -C 'Pop!_OS Legion'
-    - za -C je komentar ku klucu, nedolezity
+Systemd 
+    - system and service manager that runs as the first user-space process (PID 1) to handle system boot and manage running services
+    - key features:
+        -> Faster boot: starts services in parallel based on dependencies rather than sequential scripts.
+        -> Unit management: organizes resources and tasks into units such as service, socket, target, timer, mount, and path.
+        -> Process tracking: uses Linux cgroups to reliably track and stop all processes belonging to a service.
+        -> Built-in tools: systemctl, journalctl (logging), loginctl (sessions), networkctl (networking), and resolvectl (DNS)
+    
+
+
+Commands
+    SSH key pair generation
+        ssh-keygen -t ed25519 -C 'Pop!_OS Legion'
+        - za -C je komentar ku klucu, nedolezity ale mozes si tam dat poznamku napriklad kde kluc pouzivas
+

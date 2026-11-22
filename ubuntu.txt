@@ -1,0 +1,18 @@
+Packages (/etc/apt)
+    sudo apt update && sudo apt upgrade
+
+    sudo apt update 
+        - it downloads the latest index list of available packages based on /etc/apt/sources.list[.d/]
+        - it doesn’t install or change any software, it just updates apt’s knowledge of what’s available
+        - the downloaded indexes are stored in /var/lib/apt/lists
+    
+    sudo apt upgrade
+        - actually installs newer versions of the packages you already have, based on that list. It won’t remove packages or install new ones just to satisfy dependencies
+    
+
+
+    /etc/apt/sources.list OLD
+        - single-file list of repositories. On older Ubuntu releases (22.04 and earlier) it holds all the default Ubuntu repositories. On newer releases (24.04+), it’s mostly empty or contains just a comment, because the default sources moved to /etc/apt/sources.list.d/
+
+    /etc/apt/sources.list.d/ NEW
+        - a directory where each repository gets its own file. This keeps things tidy: adding a third-party repo means dropping in a new file, and removing it means deleting that file, without editing a shared one. Software like Docker or Google Chrome typically adds its repo here

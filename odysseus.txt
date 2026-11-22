@@ -1,0 +1,7 @@
+Workflow:
+    Spustenie = docker compose up [-d na pozadi]
+    Vypnutie = docker compose down 
+    Apka = 127.0.0.1:7011 / localhost:7011
+
+Scripts:
+scripts/check-docker-gpu.sh - check whether docker can see your GPU
