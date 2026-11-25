@@ -1,15 +1,193 @@
-Systemd 
+# Filesystem 
+    / = root directory  
+    /home = domovske adresary pouzivatelov
+    /root = domovsky adresar superusera
+
+    /bin 
+        - essential binary programs run in terminal such as ls, cp, mv, cat, mkdir,...
+        - "toolbox" that helps linux operate
+        - NOW symlinked into /usr/bin
+    
+    /sbin
+        - tools for managing the OS (system binaries):
+            -> networking - ip, ifconfig, route
+            -> disk management - fdisk, mkfs, parted
+            -> booting the system - grub-install, init
+            -> system recovery - fsck, e2fsck
+        - NOW symlinked into /usr/sbin
+    
+    /lib
+        - shared libraries
+        - NOW symlinked into /usr/lib
+    
+    /etc
+        - configuration files:
+            /etc/network = network configuration
+            /etc/ssh = ssh configuration
+            /etc/resolv.conf = dns settings
+        - instead of storing configuration settings for each application separately, it's mostly all here
+    
+    /usr = unix system resources
+        - software storage = applications, libraries, documentation, development tools, shared resources
+        /usr/bin - hundreds of executable programs
+    
+    /var = variable files (change often)
+        - logs, mails, databases etc.
+        /var/log = logs
+        
+    /tmp = temporary files
+    /media 
+        - automatically mounted devices such as USBs, DVDs,...
+    /mnt 
+        - manually mounted disks (partitions), network shares and other storage
+
+    /dev = hardware devices
+        - virtual file system
+        - as we know, linux tries to treat everything as a file. The devices such as disk partitions, mouse, keyboard, printer, terminal, they all appear here as files
+        - thus, you can use API for working with classic files with these devices 
+
+    /proc 
+        - kernel and process information in forms of files - `live OS dashboard`
+        - virtual filesystem
+        - contains live information about everything currently running on OS:
+            -> running processes 
+            -> cpu usage
+            -> memory usage 
+            -> system configuration
+        - monitoring tools read info from this directory
+
+    /boot 
+        - everything to boot the system:
+            -> startup configuration 
+            -> bootloader (such as GRUB)
+            -> linux kernel
+    
+    /opt = optional software
+        - third-party software packages that are not pard of the standard distribution
+        - hosting applications that require custom configuration or isolation (e.g., a web server like Apache
+        or Nginx)
+        - storing application-specific data (e.g., `/opt/myapp/data`).
+
+    /run = volatile runtime data 
+        - storage of non-persistent (runtime) data:
+            -> PID files (store process ID of a running service)
+            -> sockets
+            -> runtime configuration files 
+            -> temporary files (logs, caches,...)
+        - all contents are cleaned during reboot 
+
+    /srv = service data 
+        - storage of service-specific files that are not user data:
+            -> web services 
+            -> database services 
+            -> FTP or SFTP servers 
+        - persistent 
+
+    /sys
+        - read-only SysFS Virtual Filesystem provides access to kernel and hardware information
+        - interact with kernel 
+        - monitor system resources
+        - common contents:
+            /sys/class or /sys/devices - hardware details 
+            /sys/module - loaded kernel modules 
+            /sys/fs - filesystem information 
+            /sys/power - power management
+
+## Virtual file system 
+/proc, /sys, /dev are virtual file systems. 
+VFS doesn't store any actual data in memory, it's generated dynamically by the kernel in response to system requests. It's a `logical interface` that the kernel uses to expose the internal system data (e.g. CPU temperature) to userspace programs. The kernel generates the data on the fly when you access the files. 
+
+Example (simplified):
+When you try to obtain the CPU temp, the kernel asks the CPU firmware what is the temperature and returns it to you via a file in VFS.
+
+##/sys vs /proc 
+/proc - kernel and process-related data such as CPU details, memory usage, process states,...
+    - is part of the `proc` kernel module and is enabled by default in most linux distributions
+
+/sys - hardware, driver-related data, kernel modules
+    - is part of the `sysfs` kernel module and is enabled by default in most linux distributions
+
+
+# Kernel modules 
+Kernel modules are `loadable kernel modules (LKMs)` that extend kernel's functionality without requiring a full recompilation of the kernel. They are typically written in C and compiled into object files (.ko), which can be loaded into the kernel at runtime using tools like `insmod`, `modprobe`, or `kmod`. Using the modules you can customize the kernel to perfectly suit specific needs.
+
+Modules operate in a separate address space, reducing the risk of kernel crashes caused by faulty user-space code.
+Modules run in kernel mode, giving them maximal access.
+Modules must adhere to kernel APIs and ABI (application binary interface) to ensure compatibility across kernel versions.
+Built-in modules are compiled directly into the kernel. These include core system calls and memory management features.
+
+Starting with Linux 5.15, the kernel enforces module signing to prevent unauthorized modules from loading. This
+ensures only trusted code can run in kernel space. Modern kernels also use ASLR (address space layout randomization), which makes sure that the address space is randomized between distinct runs.
+
+## Loading new module:
+1. **Compilation**: Modules are compiled as `.ko` files using the kernel build system.
+2. **Loading**: The `insmod` or `modprobe` command loads a module into the kernel.
+3. **Execution**: The module runs in kernel space, interacting with hardware or system resources.
+4. **Unloading**: The `rmmod` command unloads a module, freeing resources.
+5. **Verification**: The `lsmod` command lists currently loaded modules. The `modinfo` prints info.
+
+## Key Kernel Modules and Their Roles
+ - **`proc` Module**: Manages the `/proc` filesystem, which provides access
+to kernel data structures (e.g., process information, system statistics,
+and kernel parameters).
+ - **`sysfs` Module**: Manages the `/sys` filesystem, which exposes
+hardware and driver information (e.g., device tree, sensor data, and
+driver settings).
+ - **`usb` Module**: Provides support for USB devices, enabling
+communication with peripherals.
+ - **`ext4` Module**: Implements the ext4 file system, allowing storage of
+files on disks.
+ - **`networking` Modules**: Handle network protocols (e.g., `ipv4`,
+`ipv6`, `tcp`, `udp`).
+ - **`graphics` Modules**: Support for GPU drivers (e.g., NVIDIA, AMD,
+Intel).
+
+TODO podrobnejsie, v akom priecinku ziju a pod.
+
+
+
+# Systemd 
     - system and service manager that runs as the first user-space process (PID 1) to handle system boot and manage running services
     - key features:
         -> Faster boot: starts services in parallel based on dependencies rather than sequential scripts.
         -> Unit management: organizes resources and tasks into units such as service, socket, target, timer, mount, and path.
         -> Process tracking: uses Linux cgroups to reliably track and stop all processes belonging to a service.
         -> Built-in tools: systemctl, journalctl (logging), loginctl (sessions), networkctl (networking), and resolvectl (DNS)
+    - commands:
+        systemd-analyze
     
+## Systemctl
+A command-line tool for controling systemd. 
+    systemctl status docker                 # show a service state
+    sudo systemctl start docker             # start now
+    sudo systemctl stop docker              # stop now
+    sudo systemctl restart docker           # stop and start
+    sudo systemctl enable docker            # start automatically at boot
+    sudo systemctl disable docker           # don't start at boot
+    systemctl list-units --type=service     # list loaded services
+
+## journalctl
+## timedatectl
+## hostnamectl
+## loginctl
 
 
-Commands
-    SSH key pair generation
-        ssh-keygen -t ed25519 -C 'Pop!_OS Legion'
-        - za -C je komentar ku klucu, nedolezity ale mozes si tam dat poznamku napriklad kde kluc pouzivas
+# Bash commands = binaries = /bin
+## ssh
+### Key pair generation
+    ssh-keygen -t ed25519 -C 'Pop!_OS Legion'
+    - za -C je komentar ku klucu, nedolezity ale mozes si tam dat poznamku napriklad kde kluc pouzivas
 
+## grep
+
+## find 
+    - find file or directory in a filesystem 
+    find <dir> -name "<name>"           # by name
+    find <dir> -name "*.log"            # by pattern (case-sensitive)
+    find <dir> -iname "*.log"           # case-insensitive
+    find <dir> -type f -name "*.conf"   # `files only`
+    find <dir> -type d -name "config"   # `directories only`
+
+    find <dir> -size +100M              # files larger than 100 MB
+    find <dir> -mtime -7                # modified in the last 7 days
+    find <dir> -user alice              # owned by a user
