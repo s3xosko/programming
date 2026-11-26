@@ -1,0 +1,18 @@
+Instalacia openrazer-daemon
+    sudo add-apt-repository ppa:openrazer/stable
+    sudo apt update
+    sudo apt install openrazer-meta
+    sudo gpasswd -a $USER plugdev 
+        - pridal som seba do plugdev skupiny
+    
+    systemctl --user status openrazer-daemon
+        - check ci daemon bezi
+
+    Instalacia polychromaticu cez software shop.
+
+Instalacia terminal shitov:
+    hollywood: fills your terminal with a split-screen of scrolling code, system monitors, and hex dumps, like a movie hacking scene
+    genact: pretends to do busy things, such as compiling, downloading, or running a botnet, with fake progress bars and logs
+    cmatrix: the green falling characters from The Matrix
+    
+    sudo apt install hollywood cmatrix

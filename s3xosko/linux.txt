@@ -107,6 +107,15 @@ When you try to obtain the CPU temp, the kernel asks the CPU firmware what is th
 /sys - hardware, driver-related data, kernel modules
     - is part of the `sysfs` kernel module and is enabled by default in most linux distributions
 
+## Specific folders and their meaning 
+    ### /etc/passwd - list of all users 
+    ### /etc/group = list of all groups
+        - line example = docker:x:984:s3xosko
+            -> docker = group name 
+            -> x = placeholder for password which are NOW stored in /etc/gshadow
+            -> 984 = group ID 
+            -> s3xosko = list of users that belong to this group
+            -> the docker group allows its users to interact with docker containers and services (they do not need to use superuser priviledges)
 
 # Kernel modules 
 Kernel modules are `loadable kernel modules (LKMs)` that extend kernel's functionality without requiring a full recompilation of the kernel. They are typically written in C and compiled into object files (.ko), which can be loaded into the kernel at runtime using tools like `insmod`, `modprobe`, or `kmod`. Using the modules you can customize the kernel to perfectly suit specific needs.
@@ -157,7 +166,7 @@ TODO podrobnejsie, v akom priecinku ziju a pod.
         systemd-analyze
     
 ## Systemctl
-A command-line tool for controling systemd. 
+A command-line tool for controling systemd. System services manager.
     systemctl status docker                 # show a service state
     sudo systemctl start docker             # start now
     sudo systemctl stop docker              # stop now
@@ -166,6 +175,9 @@ A command-line tool for controling systemd.
     sudo systemctl disable docker           # don't start at boot
     systemctl list-units --type=service     # list loaded services
 
+    ### systemctl --user
+        User services manager, a separate systemd instance that starts when user logs in, one per user.
+        
 ## journalctl
 ## timedatectl
 ## hostnamectl
@@ -191,3 +203,13 @@ A command-line tool for controling systemd.
     find <dir> -size +100M              # files larger than 100 MB
     find <dir> -mtime -7                # modified in the last 7 days
     find <dir> -user alice              # owned by a user
+
+## du = disk usage
+    du -sh .
+        - shows the size of current directory
+        -s shows only summary
+        -h print sizes in human-readable form
+
+## df 
+    - report file system space usage
+    -h = human-readable
